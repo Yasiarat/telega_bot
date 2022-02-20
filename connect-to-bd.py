@@ -8,4 +8,12 @@ for row in range(1, stickers_page.max_row + 1):
     for column in range(1, stickers_page.max_column + 1):
         if stickers_page.cell(row=row, column=column).value == 'привет':
             print(stickers_page.cell(row=row, column=column + 1).value)
+        if stickers_page.cell(row=row, column=column).value == 'пока':
+            print(stickers_page.cell(row=row, column=column + 1).value)
+        if stickers_page.cell(row=row, column=column).value == 'как дела?':
+            print(stickers_page.cell(row=row, column=column + 1).value)
+        if stickers_page.cell(row=row, column=column).value == 'удачи':
+            print(stickers_page.cell(row=row, column=column + 1).value)
+        if stickers_page.cell(row=row, column=column).value == 'знаешь?':
+            print(stickers_page.cell(row=row, column=column + 1).value)
 

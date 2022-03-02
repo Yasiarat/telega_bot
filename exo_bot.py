@@ -1,8 +1,7 @@
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, MessageHandler, Filters, CallbackContext
-from openpyxl import load_workbook
-from key import TOKEN
-
+from telega_bot.key import TOKEN
+from telega_bot.connect_to_bd import stickers
 
 def main():
     updater = Updater(
@@ -15,12 +14,14 @@ def main():
     # создаём обработчик
     echo_handler = MessageHandler(Filters.all, do_echo)
     hello_handler = MessageHandler(Filters.text('Привет'), say_hello)
+    bye_handler = MessageHandler(Filters.text('пока'), say_bye)
 
     '''hello_handler = MessageHandler(if 'привет' in text.lower():
         say_hello)
     '''
     # регестрируем обработчик
     dispatcher.add_handler(hello_handler)
+    dispatcher.add_handler(bye_handler)
     dispatcher.add_handler(echo_handler)
 
     updater.start_polling()
@@ -50,6 +51,10 @@ def say_hello(update: Update, context: CallbackContext):
                                 f' приятно познакомиться с живым человеком\n'
                                 f'Я - бот'
                               )
+
+
+def say_bye(update: Update, context: CallbackContext):
+    update.message.reply_sticker(stickers['пока'])
 
 
 def keyboard(update: Update, context: CallbackContext) -> None:

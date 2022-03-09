@@ -1,7 +1,8 @@
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, MessageHandler, Filters, CallbackContext
-from telega_bot.key import TOKEN
-from telega_bot.connect_to_bd import stickers
+from key import TOKEN
+from connect_to_bd import stickers, replies
+
 
 def main():
     updater = Updater(
@@ -13,14 +14,13 @@ def main():
 
     # создаём обработчик
     echo_handler = MessageHandler(Filters.all, do_echo)
+    text_handler = MessageHandler(Filters.text, say_smth)
     hello_handler = MessageHandler(Filters.text('Привет'), say_hello)
     bye_handler = MessageHandler(Filters.text('пока'), say_bye)
 
-    '''hello_handler = MessageHandler(if 'привет' in text.lower():
-        say_hello)
-    '''
     # регестрируем обработчик
     dispatcher.add_handler(hello_handler)
+    dispatcher.add_handler(text_handler)
     dispatcher.add_handler(bye_handler)
     dispatcher.add_handler(echo_handler)
 
@@ -55,6 +55,20 @@ def say_hello(update: Update, context: CallbackContext):
 
 def say_bye(update: Update, context: CallbackContext):
     update.message.reply_sticker(stickers['пока'])
+
+
+def say_smth(update: Update, context: CallbackContext):
+    name = update.message.from_user.first_name
+    text = update.message.text
+    for keyword in stickers:
+        if keyword in text:
+            if stickers[keyword]:
+                update.message.reply_sticker(stickers[keyword])
+            if replies[keyword]:
+                update.message.reply_text(replies[keyword].format(name))
+            break
+    else:
+        do_echo(update, context)
 
 
 def keyboard(update: Update, context: CallbackContext) -> None:

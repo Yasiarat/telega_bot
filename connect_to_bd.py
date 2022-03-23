@@ -12,6 +12,18 @@ def insert_sticker(keyword, sticker_id=None, reply_text=None):
     replies[keyword] = reply_text
 
 
+
+def in_database(user: int) -> bool:
+    '''
+    возвращает True, если id пользователь есть в database
+    '''
+    user_page = bd['Users']
+    for row in range(1, user_page.max_row + 1):
+        if user == user_page.cell(row=row, column=1).value:
+            return True
+        return False
+
+
 bd = load_workbook('database.xlsx')
 for sheet in bd:
     print(sheet.title)

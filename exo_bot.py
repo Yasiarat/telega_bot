@@ -1,7 +1,7 @@
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, MessageHandler, Filters, CallbackContext
 from key import TOKEN
-from connect_to_bd import stickers, replies
+from connect_to_bd import stickers, replies, insert_sticker, in_database
 
 
 def main():
@@ -9,11 +9,12 @@ def main():
         token=TOKEN,
         use_context=True
     )
-    # диспечер распределяет сообщения по обработчикам
+    # диспетчер распределяет сообщения по обработчикам
     dispatcher = updater.dispatcher
 
     # создаём обработчик
     echo_handler = MessageHandler(Filters.all, do_echo)
+    new_sticker_handler = MessageHandler(Filters.text('Добавь, добавь'), new_sticker)
     text_handler = MessageHandler(Filters.text, say_smth)
     hello_handler = MessageHandler(Filters.text('Привет'), say_hello)
     bye_handler = MessageHandler(Filters.text('пока'), say_bye)
@@ -23,6 +24,7 @@ def main():
     dispatcher.add_handler(hello_handler)
     dispatcher.add_handler(keyboard_handler)
     dispatcher.add_handler(text_handler)
+    dispatcher.add_handler(new_sticker_handler)
     dispatcher.add_handler(bye_handler)
     dispatcher.add_handler(echo_handler)
 
@@ -73,6 +75,28 @@ def say_smth(update: Update, context: CallbackContext):
         do_echo(update, context)
 
 
+def new_sticker(update: Update, context: CallbackContext) -> None:
+    sticker_id = update.message.sticker.file_id
+    for keyword in stickers:
+        if sticker_id == stickers[keyword]:
+            update.message.reply_text('у меня тоже такой есть')
+            update.message.reply_sticker(sticker_id)
+            break
+    else:
+        context.user_data['new_sticker'] = sticker_id
+        update.message.reply_text('введи ключевое слово')
+
+
+def new_keyword(update: Update, context: CallbackContext) -> None:
+    if 'new_sticker' not in context.user_data:
+        say_smth(update, context)
+    else:
+        keyword = update.message.text
+        sticker_id = context.user_data['new_sticker']
+        insert_sticker(keyword, sticker_id)
+        context.user_data.clear()
+
+
 def keyboard(update: Update, context: CallbackContext) -> None:
     buttons = [
         ['Добавить стикер', '2', '3'],
@@ -90,6 +114,40 @@ def keyboard(update: Update, context: CallbackContext) -> None:
 
         )
     )
+
+
+def meet(update: Update, context: CallbackContext):
+    ''' старт диалога по добавлению пользователя в базу данных
+    будут собраны последовательно
+        id пользователя
+        имя
+        пол
+        класс
+    '''
+    user_id = update.message.from_user.id
+    if in_database(user_id):
+        pass # выход из диалога
+    ask_name(update, context)
+
+def ask_name(update: Update, context: CallbackContext):
+    update.message.reply_text(
+        'Привет, меня зовут Бот\n' 
+        'А тебя?'
+    )
+    if update.message.text ==
+
+
+
+def ask_sex(update: Update, context: CallbackContext):
+    pass
+
+
+def ask_grade(update: Update, context: CallbackContext):
+    pass
+
+
+def greet(update: Update, context: CallbackContext): # end
+    pass
 
 
 if __name__ == '__main__':

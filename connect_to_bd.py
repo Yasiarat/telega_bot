@@ -12,6 +12,18 @@ def insert_sticker(keyword, sticker_id=None, reply_text=None):
     replies[keyword] = reply_text
 
 
+def insert_user(user_id, name, sex, grade):
+    '''
+    вносит нового пользователя в базу данных
+    '''
+    user_page = bd['Users']
+    row = user_page.max_row + 1
+    user_page.cell(row=row, column=1).value = user_id
+    user_page.cell(row=row, column=2).value = name
+    user_page.cell(row=row, column=3).value = sex
+    user_page.cell(row=row, column=3).value = grade
+    bd.save('database.xlsx')
+
 
 def in_database(user: int) -> bool:
     '''

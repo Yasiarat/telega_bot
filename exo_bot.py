@@ -1,7 +1,7 @@
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, MessageHandler, Filters, CallbackContext
 from key import TOKEN
-from connect_to_bd import stickers, replies, insert_sticker, in_database
+from connect_to_bd import stickers, replies, insert_sticker, in_database, insert_user
 
 
 def main():
@@ -51,8 +51,8 @@ def do_echo(update: Update, context: CallbackContext) -> None:
 
 def say_hello(update: Update, context: CallbackContext):
     name = update.message.from_user.first_name
-    update.message.reply_text(text=f'Привет, {name} \n'
-                                f' приятно познакомиться с живым человеком\n'
+    update.message.reply_text(text=f'Привет, {name}, \n'
+                                f'приятно познакомиться с живым человеком\n'
                                 f'Я - бот'
                               )
 
@@ -117,7 +117,8 @@ def keyboard(update: Update, context: CallbackContext) -> None:
 
 
 def meet(update: Update, context: CallbackContext):
-    ''' старт диалога по добавлению пользователя в базу данных
+    '''
+    старт диалога по добавлению пользователя в базу данных
     будут собраны последовательно
         id пользователя
         имя
@@ -129,21 +130,52 @@ def meet(update: Update, context: CallbackContext):
         pass # выход из диалога
     ask_name(update, context)
 
+
 def ask_name(update: Update, context: CallbackContext):
     update.message.reply_text(
         'Привет, меня зовут Бот\n' 
         'А тебя?'
     )
-    if update.message.text ==
+    name = update.message.text
+    if name.isalpha():
+        return name, ask_sex(update, context, name)
 
 
+def ask_sex(update: Update, context: CallbackContext, name):
+    buttons = [
+        ['м', 'ж'],
+    ]
+    keys = ReplyKeyboardMarkup(
+        buttons
+    )
+    update.message.reply_text(
+        text=f'{name}, укажи пожалуйста свой пол',
+        reply_markup=ReplyKeyboardMarkup(
+            buttons,
+            resize_keyboard=True
+        )
+    )
+    sex = update.message.text
 
-def ask_sex(update: Update, context: CallbackContext):
-    pass
+    return sex, ask_grade(update, context)
 
 
 def ask_grade(update: Update, context: CallbackContext):
-    pass
+    buttons = [
+        ['8', '9', '10', '11'],
+    ]
+    keys = ReplyKeyboardMarkup(
+        buttons
+    )
+    update.message.reply_text(
+        text='Укажи пожалуйста свой класс',
+        reply_markup=ReplyKeyboardMarkup(
+            buttons,
+            resize_keyboard=True
+        )
+    )
+    grade = update.message.text
+    return grade
 
 
 def greet(update: Update, context: CallbackContext): # end

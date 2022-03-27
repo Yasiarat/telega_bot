@@ -19,8 +19,10 @@ def main():
     hello_handler = MessageHandler(Filters.text('Привет'), say_hello)
     bye_handler = MessageHandler(Filters.text('пока'), say_bye)
     keyboard_handler = MessageHandler(Filters.text('Клавиатура, клавиатура'), keyboard)
+    meet_handler = MessageHandler(Filters.text('давай знакомиться'), meet)
 
     # регестрируем обработчик
+    dispatcher.add_handler(meet_handler)
     dispatcher.add_handler(hello_handler)
     dispatcher.add_handler(keyboard_handler)
     dispatcher.add_handler(text_handler)
@@ -127,11 +129,15 @@ def meet(update: Update, context: CallbackContext):
     '''
     user_id = update.message.from_user.id
     if in_database(user_id):
-        pass # выход из диалога
+        return
     ask_name(update, context, user_id)
 
 
 def ask_name(update: Update, context: CallbackContext, user_id):
+    '''
+    спрашиваем имя
+    если имя состоит из букв, двигаемся дальше
+    '''
     update.message.reply_text(
         'Привет, меня зовут Бот\n' 
         'А тебя?'
@@ -142,6 +148,9 @@ def ask_name(update: Update, context: CallbackContext, user_id):
 
 
 def ask_sex(update: Update, context: CallbackContext, user_id, name):
+    '''
+    спрашиваем пол, выводим клавиатуру
+    '''
     buttons = [
         ['м', 'ж'],
     ]
@@ -158,6 +167,9 @@ def ask_sex(update: Update, context: CallbackContext, user_id, name):
 
 
 def ask_grade(update: Update, context: CallbackContext, user_id, name, sex):
+    '''
+    спрашиваем класс с помощью клавиатуры
+    '''
     buttons = [
         ['8', '9', '10', '11'],
     ]

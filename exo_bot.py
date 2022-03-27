@@ -128,26 +128,23 @@ def meet(update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
     if in_database(user_id):
         pass # выход из диалога
-    ask_name(update, context)
+    ask_name(update, context, user_id)
 
 
-def ask_name(update: Update, context: CallbackContext):
+def ask_name(update: Update, context: CallbackContext, user_id):
     update.message.reply_text(
         'Привет, меня зовут Бот\n' 
         'А тебя?'
     )
     name = update.message.text
     if name.isalpha():
-        return name, ask_sex(update, context, name)
+        ask_sex(update, context, name)
 
 
-def ask_sex(update: Update, context: CallbackContext, name):
+def ask_sex(update: Update, context: CallbackContext, user_id, name):
     buttons = [
         ['м', 'ж'],
     ]
-    keys = ReplyKeyboardMarkup(
-        buttons
-    )
     update.message.reply_text(
         text=f'{name}, укажи пожалуйста свой пол',
         reply_markup=ReplyKeyboardMarkup(
@@ -157,16 +154,13 @@ def ask_sex(update: Update, context: CallbackContext, name):
     )
     sex = update.message.text
 
-    return sex, ask_grade(update, context)
+    ask_grade(update, context, name, sex)
 
 
-def ask_grade(update: Update, context: CallbackContext):
+def ask_grade(update: Update, context: CallbackContext, user_id, name, sex):
     buttons = [
         ['8', '9', '10', '11'],
     ]
-    keys = ReplyKeyboardMarkup(
-        buttons
-    )
     update.message.reply_text(
         text='Укажи пожалуйста свой класс',
         reply_markup=ReplyKeyboardMarkup(
@@ -175,11 +169,7 @@ def ask_grade(update: Update, context: CallbackContext):
         )
     )
     grade = update.message.text
-    return grade
-
-
-def greet(update: Update, context: CallbackContext): # end
-    pass
+    insert_user(user_id, name, sex, grade)
 
 
 if __name__ == '__main__':

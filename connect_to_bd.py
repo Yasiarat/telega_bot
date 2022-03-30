@@ -12,35 +12,33 @@ def insert_sticker(keyword, sticker_id=None, reply_text=None):
     replies[keyword] = reply_text
 
 
-def insert_user(user_id, name, sex, grade):
-    '''
-    вносит нового пользователя в базу данных
-    '''
-    user_page = bd['Users']
-    row = user_page.max_row + 1
-    user_page.cell(row=row, column=1).value = user_id
-    user_page.cell(row=row, column=2).value = name
-    user_page.cell(row=row, column=3).value = sex
-    user_page.cell(row=row, column=3).value = grade
-    bd.save('database.xlsx')
-
-
 def in_database(user: int) -> bool:
     '''
     возвращает True, если id пользователь есть в database
     '''
-    user_page = bd['Users']
     for row in range(1, user_page.max_row + 1):
         if user == user_page.cell(row=row, column=1).value:
             return True
         return False
 
 
+def insert_user(*args):#принимает произвольное количество аргументов
+    '''
+    вносит нового пользователя в базу данных
+    '''
+    row = user_page.max_row + 1
+    user_page.cell(row=row, column=1).value = args[0]
+    user_page.cell(row=row, column=2).value = args[1]
+    user_page.cell(row=row, column=3).value = args[2]
+    user_page.cell(row=row, column=4).value = args[3]
+    bd.save('database.xlsx')
+
+
 bd = load_workbook('database.xlsx')
 for sheet in bd:
     print(sheet.title)
 stickers_page = bd['stickers']
-
+user_page = bd['users']
 
 stickers = {}
 replies = {}
@@ -54,5 +52,5 @@ for row in range(1, stickers_page.max_row + 1):
 
 
 if __name__ == '__main__':
-    insert_sticker('жиза', reply_text='жизнь - интересная штука')
+    insert_user(12345, 'yasrat', 'ж', '10 o')
     print(stickers)

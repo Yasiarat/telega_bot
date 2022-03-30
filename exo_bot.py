@@ -19,7 +19,7 @@ def main():
     # создаём обработчик
     echo_handler = MessageHandler(Filters.all, do_echo)
     new_sticker_handler = MessageHandler(Filters.text('Добавить стикер'), new_sticker)
-    text_handler = MessageHandler(Filters.text, ask_grade)
+    text_handler = MessageHandler(Filters.text, say_smth)
     hello_handler = MessageHandler(Filters.text('Привет'), say_hello)
     bye_handler = MessageHandler(Filters.text('пока'), say_bye)
     keyboard_handler = MessageHandler(Filters.text('Клавиатура, клавиатура'), keyboard)
@@ -132,10 +132,10 @@ def meet(update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
     if in_database(user_id):
         return
-    ask_name(update, context, user_id)
+    ask_name(update, context)
 
 
-def ask_name(update: Update, context: CallbackContext, user_id):
+def ask_name(update: Update, context: CallbackContext):
     '''
     спрашиваем имя
     TODO проверить имя пользователя в телеграме
@@ -156,7 +156,7 @@ def ask_sex(update: Update, context: CallbackContext):
         ask_name(update, context)
     context.user_data['name'] = name
     buttons = [
-        ['м', 'ж'],
+        ['м', 'ж']
     ]
     keys = ReplyKeyboardMarkup(
         buttons,
@@ -187,13 +187,30 @@ def ask_grade(update: Update, context: CallbackContext):
 
 
 def greet(update: Update, context: CallbackContext):
+    '''
+    Записывает в БД:
+        user_id(из сообщения)
+        name( из контекста)
+        sex(из контекста)
+        grade(из сообщения)
+
+    приветствует нового пользователя
+    '''
     grade = update.message.text
-    if grade in grades:
+    if grade not in grades:
         ask_grade(update, context)
     name = context.user_data['name']
     sex = context.user_data['sex']
     user_id = update.message.from_user.id
     insert_user(user_id, name, sex, grade)
+
+    update.message.reply_text(
+        f'Новая запись в БД\n'
+        f'{user_id}\n'
+        f'{name}\n'
+        f'{sex}\n'
+        f'{grade}'
+    )
 
 
 if __name__ == '__main__':

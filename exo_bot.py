@@ -1,11 +1,17 @@
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
-from telegram.ext import Updater, MessageHandler, Filters, CallbackContext
+from telegram.ext import Updater
+from telegram.ext import MessageHandler
+from telegram.ext import Filters
+from telegram.ext import CallbackContext
+from telegram.ext import ConversationHandler
 from key import TOKEN
 from connect_to_bd import stickers, replies, insert_sticker, in_database, insert_user
 
 grades = [
     ['8', '9', '10', '11'],
 ]
+
+WAIT_NAME, WAIT_SEX, WAIT_GRAGE = range(3)
 
 
 def main():
@@ -19,13 +25,22 @@ def main():
     # создаём обработчик
     echo_handler = MessageHandler(Filters.all, do_echo)
     new_sticker_handler = MessageHandler(Filters.text('Добавить стикер'), new_sticker)
-    text_handler = MessageHandler(Filters.text, say_smth)
+    text_handler = MessageHandler(Filters.text, meet)
     hello_handler = MessageHandler(Filters.text('Привет'), say_hello)
     bye_handler = MessageHandler(Filters.text('пока'), say_bye)
     keyboard_handler = MessageHandler(Filters.text('Клавиатура, клавиатура'), keyboard)
+    conv_handler = ConversationHandler(
+        entry_points=[text_handler],  #Точка старта
+        states={
+            WAIT_NAME: [MessageHandler(Filters.text, ask_sex)],
+            WAIT_SEX: [MessageHandler(Filters.text, ask_grade)],
+            WAIT_GRAGE: [MessageHandler(Filters.text, greet)],
+        },  #Состояния конечного автомата для диалога
+        fallbacks=[],  #общие точки выхода или отмены
+    )
 
     # регестрируем обработчик
-    dispatcher.add_handler(text_handler)
+    dispatcher.add_handler(conv_handler)
     dispatcher.add_handler(hello_handler)
     dispatcher.add_handler(keyboard_handler)
     dispatcher.add_handler(new_sticker_handler)
@@ -132,7 +147,7 @@ def meet(update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
     if in_database(user_id):
         return
-    ask_name(update, context)
+    return ask_name(update, context)
 
 
 def ask_name(update: Update, context: CallbackContext):
@@ -144,7 +159,7 @@ def ask_name(update: Update, context: CallbackContext):
         'Привет, меня зовут Бот\n' 
         'А тебя?'
     )
-    ask_sex(update, context)
+    return WAIT_NAME
 
 
 def ask_sex(update: Update, context: CallbackContext):
@@ -154,7 +169,7 @@ def ask_sex(update: Update, context: CallbackContext):
     name = update.message.text
     if not name.isalpha():
         ask_name(update, context)
-    context.user_data['name'] = name
+    context.user_data['name'] = name #запоминаем имя
     buttons = [
         ['м', 'ж']
     ]
@@ -166,6 +181,7 @@ def ask_sex(update: Update, context: CallbackContext):
         text=f'Приятно познакомиться, {name}, укажи пожалуйста свой пол',
         reply_markup=keys# разметка
     )
+    return WAIT_SEX
 
 
 def ask_grade(update: Update, context: CallbackContext):
@@ -184,6 +200,7 @@ def ask_grade(update: Update, context: CallbackContext):
         text='Укажи пожалуйста свой класс',
         reply_markup=keys
     )
+    return WAIT_GRAGE
 
 
 def greet(update: Update, context: CallbackContext):
@@ -211,6 +228,7 @@ def greet(update: Update, context: CallbackContext):
         f'{sex}\n'
         f'{grade}'
     )
+    return ConversationHandler.END
 
 
 if __name__ == '__main__':

@@ -11,7 +11,7 @@ grades = [
     ['8', '9', '10', '11'],
 ]
 
-WAIT_NAME, WAIT_SEX, WAIT_GRAGE = range(3)
+WAIT_NAME, WAIT_SEX, WAIT_GRADE = range(3)
 
 
 def main():
@@ -34,7 +34,7 @@ def main():
         states={
             WAIT_NAME: [MessageHandler(Filters.text, ask_sex)],
             WAIT_SEX: [MessageHandler(Filters.text, ask_grade)],
-            WAIT_GRAGE: [MessageHandler(Filters.text, greet)],
+            WAIT_GRADE: [MessageHandler(Filters.text, greet)],
         },  #Состояния конечного автомата для диалога
         fallbacks=[],  #общие точки выхода или отмены
     )
@@ -167,8 +167,13 @@ def ask_sex(update: Update, context: CallbackContext):
     спрашиваем пол, выводим клавиатуру
     '''
     name = update.message.text
-    if not name.isalpha():
-        ask_name(update, context)
+    if not name_is_valid(name):
+        update.message.reply_text(
+            'Некорректное имя\n'
+            'Имя должно состоять из букв и начинаться с заглавной\n'
+            'Попробуй ещё раз'
+        )
+        return WAIT_NAME
     context.user_data['name'] = name #запоминаем имя
     buttons = [
         ['м', 'ж']
@@ -189,8 +194,13 @@ def ask_grade(update: Update, context: CallbackContext):
     спрашиваем класс с помощью клавиатуры
     '''
     sex = update.message.text
-    if sex != 'м' and sex != 'ж':
-        ask_sex(update, context)
+    if not sex_is_valid(sex):
+        update.message.reply_text(
+            'Некорректное пол\n'
+            'Воспользуйся клавиатурой\n'
+            'Попробуй ещё раз'
+        )
+        return WAIT_SEX
     context.user_data['sex'] = sex
     keys = ReplyKeyboardMarkup(
         grades,
@@ -200,22 +210,26 @@ def ask_grade(update: Update, context: CallbackContext):
         text='Укажи пожалуйста свой класс',
         reply_markup=keys
     )
-    return WAIT_GRAGE
+    return WAIT_GRADE
 
 
 def greet(update: Update, context: CallbackContext):
     '''
     Записывает в БД:
         user_id(из сообщения)
-        name( из контекста)
+        name(из контекста)
         sex(из контекста)
         grade(из сообщения)
-
     приветствует нового пользователя
     '''
     grade = update.message.text
-    if grade not in grades:
-        ask_grade(update, context)
+    if not grade_is_valid(grade):
+        update.message.reply_text(
+            'Некорректный класс\n'
+            'Воспользуйся клавиатурой\n'
+            'Попробуй ещё раз'
+        )
+        return WAIT_GRADE
     name = context.user_data['name']
     sex = context.user_data['sex']
     user_id = update.message.from_user.id
@@ -229,6 +243,21 @@ def greet(update: Update, context: CallbackContext):
         f'{grade}'
     )
     return ConversationHandler.END
+
+
+def name_is_valid(name: str) -> bool:
+    return name.isalpha() and name[0].isupper() and name[1:].islower()
+
+
+def sex_is_valid(sex: str) -> bool:
+    return sex == 'м' or sex == 'ж'
+
+
+def grade_is_valid(grade: str) -> bool:
+    for row in grades:
+        if grade in row:
+            return True
+        return False
 
 
 if __name__ == '__main__':

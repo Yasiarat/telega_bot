@@ -266,11 +266,9 @@ def sex_is_valid(sex: str) -> bool:
 
 
 def grade_is_valid(grade: str) -> bool:
-    for row in grades:
-        if grade in row:
-            return True
-        return False
+    return grade in grades
 
 
 if __name__ == '__main__':
     main()
+    

@@ -7,8 +7,13 @@ from telegram.ext import ConversationHandler
 from key import TOKEN
 from connect_to_bd import stickers, replies, insert_sticker, in_database, insert_user
 
-grades = [
-    ['8', '9', '10', '11'],
+
+grades = ['8а', '8б', '9н', '9о', '10н', '10о', '11']
+grades_buttons = [
+    [grades[0], grades[1]],
+    [grades[2], grades[3]],
+    [grades[4], grades[5]],
+    [grades[0]],
 ]
 
 WAIT_NAME, WAIT_SEX, WAIT_GRADE = range(3)
@@ -25,7 +30,7 @@ def main():
     # создаём обработчик
     echo_handler = MessageHandler(Filters.all, do_echo)
     new_sticker_handler = MessageHandler(Filters.text('Добавить стикер'), new_sticker)
-    text_handler = MessageHandler(Filters.text, meet)
+    text_handler = MessageHandler(Filters.text('/start'), meet)
     hello_handler = MessageHandler(Filters.text('Привет'), say_hello)
     bye_handler = MessageHandler(Filters.text('пока'), say_bye)
     keyboard_handler = MessageHandler(Filters.text('Клавиатура, клавиатура'), keyboard)
@@ -146,7 +151,12 @@ def meet(update: Update, context: CallbackContext):
     '''
     user_id = update.message.from_user.id
     if in_database(user_id):
-        return
+        update.message.reply_text(
+            f'Добро пожаловать, {update.message.from_user.username}',
+            reply_markup=ReplyKeyboardRemove()
+
+        )
+        return ConversationHandler.END
     return ask_name(update, context)
 
 
@@ -157,7 +167,8 @@ def ask_name(update: Update, context: CallbackContext):
     '''
     update.message.reply_text(
         'Привет, меня зовут Бот\n' 
-        'А тебя?'
+        'А тебя?',
+        reply_markup=ReplyKeyboardRemove()
     )
     return WAIT_NAME
 
@@ -174,17 +185,17 @@ def ask_sex(update: Update, context: CallbackContext):
             'Попробуй ещё раз'
         )
         return WAIT_NAME
-    context.user_data['name'] = name #запоминаем имя
+    context.user_data['name'] = name  # запоминаем имя
     buttons = [
         ['м', 'ж']
     ]
     keys = ReplyKeyboardMarkup(
         buttons,
-        resize_keyboard=True#размер
+        resize_keyboard=True  # размер
     )
     update.message.reply_text(
         text=f'Приятно познакомиться, {name}, укажи пожалуйста свой пол',
-        reply_markup=keys# разметка
+        reply_markup=keys  # разметка
     )
     return WAIT_SEX
 
@@ -203,7 +214,7 @@ def ask_grade(update: Update, context: CallbackContext):
         return WAIT_SEX
     context.user_data['sex'] = sex
     keys = ReplyKeyboardMarkup(
-        grades,
+        grades_buttons,
         resize_keyboard=True  # размер
     )
     update.message.reply_text(
@@ -240,7 +251,8 @@ def greet(update: Update, context: CallbackContext):
         f'{user_id}\n'
         f'{name}\n'
         f'{sex}\n'
-        f'{grade}'
+        f'{grade}',
+        reply_markup=ReplyKeyboardRemove()
     )
     return ConversationHandler.END
 

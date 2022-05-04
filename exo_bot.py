@@ -7,7 +7,6 @@ from telegram.ext import ConversationHandler
 from key import TOKEN
 from connect_to_bd import stickers, replies, insert_sticker, in_database, insert_user
 
-
 grades = ['8а', '8б', '9н', '9о', '10н', '10о', '11']
 grades_buttons = [
     [grades[0], grades[1]],
@@ -29,27 +28,27 @@ def main():
 
     # создаём обработчик
     echo_handler = MessageHandler(Filters.all, do_echo)
+    say_handler = MessageHandler(Filters.text, say_smth)
     new_sticker_handler = MessageHandler(Filters.text('Добавить стикер'), new_sticker)
     text_handler = MessageHandler(Filters.text('/start'), meet)
     hello_handler = MessageHandler(Filters.text('Привет'), say_hello)
-    bye_handler = MessageHandler(Filters.text('пока'), say_bye)
     keyboard_handler = MessageHandler(Filters.text('Клавиатура, клавиатура'), keyboard)
     conv_handler = ConversationHandler(
-        entry_points=[text_handler],  #Точка старта
+        entry_points=[text_handler],  # Точка старта
         states={
             WAIT_NAME: [MessageHandler(Filters.text, ask_sex)],
             WAIT_SEX: [MessageHandler(Filters.text, ask_grade)],
             WAIT_GRADE: [MessageHandler(Filters.text, greet)],
-        },  #Состояния конечного автомата для диалога
-        fallbacks=[],  #общие точки выхода или отмены
+        },  # Состояния конечного автомата для диалога
+        fallbacks=[],  # общие точки выхода или отмены
     )
 
     # регестрируем обработчик
     dispatcher.add_handler(conv_handler)
+    dispatcher.add_handler(say_handler)
     dispatcher.add_handler(hello_handler)
     dispatcher.add_handler(keyboard_handler)
     dispatcher.add_handler(new_sticker_handler)
-    dispatcher.add_handler(bye_handler)
     dispatcher.add_handler(echo_handler)
 
     updater.start_polling()
@@ -76,13 +75,9 @@ def do_echo(update: Update, context: CallbackContext) -> None:
 def say_hello(update: Update, context: CallbackContext):
     name = update.message.from_user.first_name
     update.message.reply_text(text=f'Привет, {name} \n'
-                                f' приятно познакомиться с живым человеком\n'
-                                f'Я - бот'
+                                   f' приятно познакомиться с живым человеком\n'
+                                   f'Я - бот'
                               )
-
-
-def say_bye(update: Update, context: CallbackContext):
-    update.message.reply_sticker(stickers['пока'])
 
 
 def say_smth(update: Update, context: CallbackContext):
@@ -166,7 +161,7 @@ def ask_name(update: Update, context: CallbackContext):
     TODO проверить имя пользователя в телеграме
     '''
     update.message.reply_text(
-        'Привет, меня зовут Бот\n' 
+        'Привет, меня зовут Бот\n'
         'А тебя?',
         reply_markup=ReplyKeyboardRemove()
     )
@@ -271,4 +266,3 @@ def grade_is_valid(grade: str) -> bool:
 
 if __name__ == '__main__':
     main()
-    

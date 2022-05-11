@@ -52,5 +52,7 @@ for row in range(1, stickers_page.max_row + 1):
 
 
 if __name__ == '__main__':
-    insert_user(12345, 'yasrat', 'ж', '10 o')
+    # insert_user(12345, 'yasrat', 'ж', '10 o')
     print(stickers)
+    print(user_page.max_row)
+    print(in_database(1990838212))

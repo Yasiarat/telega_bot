@@ -12,7 +12,7 @@ grades_buttons = [
     [grades[0], grades[1]],
     [grades[2], grades[3]],
     [grades[4], grades[5]],
-    [grades[0]],
+    [grades[6]],
 ]
 
 WAIT_NAME, WAIT_SEX, WAIT_GRADE = range(3)

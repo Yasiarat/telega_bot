@@ -19,7 +19,7 @@ def in_database(user: int) -> bool:
     for row in range(1, user_page.max_row + 1):
         if user == user_page.cell(row=row, column=1).value:
             return True
-        return False
+    return False
 
 
 def insert_user(*args):#принимает произвольное количество аргументов
